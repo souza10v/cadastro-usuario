@@ -7,12 +7,12 @@ class EditCustomerController{
 
         const { id } = request.query as {id: string};
 
-        const { name, email } = request.body as {name: string, email: string};
+        const { name, email, status } = request.body as {name: string, email: string, status: boolean};
 
         const editCustomerService = new EditCustomerService();
 
         const customer = await editCustomerService.execute({
-            id, name, email
+            id, name, email, status
         });
 
         reply.send(customer)

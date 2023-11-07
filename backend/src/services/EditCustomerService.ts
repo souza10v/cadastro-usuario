@@ -4,13 +4,12 @@ interface EditCustomerProps {
     id: string;
     name: string;
     email: string;
+    status: boolean;
 }
 
 class EditCustomerService {
 
-
-
-    async execute({ id, name, email }: EditCustomerProps) {
+    async execute({ id, name, email, status }: EditCustomerProps) {
 
         if (!id) {
             throw new Error("Solicitação inválida")
@@ -35,6 +34,7 @@ class EditCustomerService {
             data: {
                 name: name,
                 email: email,
+                status: status,
                 updated_at: currentTimestamp
             },
         });

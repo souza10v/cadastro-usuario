@@ -20,6 +20,7 @@
 import { FiTrash, FiEdit } from 'react-icons/fi'
 import { useState, useEffect, useRef, FormEvent } from 'react'
 import { api } from './services/apis'
+import Modal from './components/Modal'
 
 interface CustomerProps {
   id: string;
@@ -29,16 +30,41 @@ interface CustomerProps {
   created_at: string;
 }
 
+interface EditProps {
+  id: string;
+  name: string;
+  email: string;
+  status: boolean;
+  onclick: boolean;
+}
+
 export default function App() {
 
   const [customers, setCustomers] = useState<CustomerProps[]>([])
   const nameRef = useRef<HTMLInputElement | null>(null)
   const emailRef = useRef<HTMLInputElement | null>(null)
+  //const [modal, setModal] = useState<EditProps[]>([])
+  const [open, setOpen] = useState<boolean>(false)
+  const [nameModal, setNameModal] = useState("")
+  const [emailModal, setEmailModal] = useState("")
+  //const [customerStatusModal, setCustomerStatusModal] = useState<boolean>(false)
+  const [idModal, setIDModal] = useState("")
+  const [customerStatusModal, setCustomerStatusModal] = useState<boolean>(false)
+
+
 
   useEffect(() => {
     loadCustomer();
   }, [])
 
+
+  const handleModal = (nameModal: string, emailModal: string, customerID: string, statusCustomer: boolean, statusModal: boolean) => {
+    setNameModal(nameModal)
+    setEmailModal(emailModal)
+    setIDModal(customerID)
+    setCustomerStatusModal(statusCustomer)
+    setOpen(statusModal)
+  }
 
   const loadCustomer = async () => {
 
@@ -49,6 +75,25 @@ export default function App() {
       console.log("Erro ao ler usuário ", error)
     }
 
+  }
+
+  const handleUpdate = async (id: string) => {
+
+    try {
+        await api.put(`/editcustomer?id=${id}`, {
+            name: nameModal,
+            email: emailModal,
+            status: customerStatusModal
+        })
+
+        console.log("worked")
+        
+        setOpen(false)
+        loadCustomer()
+
+    } catch (error) {
+      console.log("error editing ",error)
+    }
   }
 
   const handleSubmit = async (event: FormEvent) => {
@@ -84,7 +129,7 @@ export default function App() {
         }
       })
 
-      const allCustomers = customers.filter( (customer) => customer.id !== id) // a cada vez remove da lista o intem que com id clicado, ou seja salva todos que tem o id diferente
+      const allCustomers = customers.filter((customer) => customer.id !== id) // a cada vez remove da lista o intem que com id clicado, ou seja salva todos que tem o id diferente
       setCustomers(allCustomers)
 
     } catch (error) {
@@ -138,6 +183,7 @@ export default function App() {
               </button>
 
               <button
+                onClick={() => handleModal(item.name, item.email, item.id, item.status, true)}
                 className='bg-green-500 w-7 h-7 flex items-center justify-center rounded-lg absolute right-14 top-6'>
                 <FiEdit size={18} color="#FFF" />
               </button>
@@ -145,6 +191,55 @@ export default function App() {
             </article>
           ))}
         </section>
+
+        <div className='p-10 flex justify-centerw-full'>
+          {/* <Modal open={open} onClose={() => setOpen(false)} > */}
+          <Modal open={open} onClose={() => setOpen(false)}>
+            <div className='flex flex-col gap-4'></div>
+            <h1 className=' flex flex-row justify-center text-2xl'> Editando Cliente</h1>
+
+            <label className="font-medium  text-black">Nome</label>
+            <input
+              type="text"
+              placeholder="Insira o nome"
+              className="w-full mb-5 p-2 border border-black"
+              value={nameModal}
+              onChange={(e) => setNameModal(e.target.value)}
+            />
+            <label className="font-medium text-black">Email</label>
+            <input
+              type="email"
+              placeholder={emailModal}
+              className="w-full mb-5 p-2 border border-black"
+              value={emailModal}
+              onChange={(e) => setEmailModal(e.target.value)}
+            />
+            <label className="font-medium text-black">Status</label>
+
+            <select
+              className="w-full mb-5 p-2 border border-black"
+              value={customerStatusModal ? "Ativo" : "Inativo"}
+              onChange={(e) =>
+                setCustomerStatusModal(e.target.value === "Ativo")}
+            // You can use the selectedValue as needed in your component state or logic.
+
+            >
+              <option value="Ativo">Ativo</option>
+              <option value="Inativo">Inativo</option>
+            </select>
+
+            <div className='flex flex-row justify-center'>
+              <button
+                className='border border-neutral-300 rounded-lg py-1.5 px-10 bg-blue-500 hover:bg-blue-600 text-white'
+                onClick={() => handleUpdate(idModal)}
+              >
+                Atualizar
+              </button>
+            </div>
+
+          </Modal>
+        </div>
+
 
       </main>
     </div>
